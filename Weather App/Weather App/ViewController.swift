@@ -80,7 +80,7 @@ class ViewController: UIViewController, UITextFieldDelegate {
            weatherConditionImage.widthAnchor.constraint(equalToConstant: 240).isActive = true
            weatherConditionImage.heightAnchor.constraint(equalToConstant: 240).isActive = true
         
-//        activityIndicator.hidesWhenStopped = true
+        activityIndicator.hidesWhenStopped = true
 
     }
     
@@ -162,11 +162,11 @@ class ViewController: UIViewController, UITextFieldDelegate {
         guard let search = search else{
             return
         }
-//        startLoading()
+        startLoading()
 //        Step1 Get URl
         guard let url = getURL(query:search) else {
             print("Could not get URL")
-//            stopLoading()
+            stopLoading()
             return
         }
         
@@ -175,9 +175,9 @@ class ViewController: UIViewController, UITextFieldDelegate {
            
 //    Step3: Create task for session
         let dataTask = session.dataTask(with: url){data,response,error in
-//            DispatchQueue.main.async {
-//                            self.stopLoading()
-//                        }
+            DispatchQueue.main.async {
+                            self.stopLoading()
+                        }
 //            network call finished
             print("Network call complete")
             
@@ -258,6 +258,15 @@ class ViewController: UIViewController, UITextFieldDelegate {
         }
         return weather
     }
+    
+    func startLoading() {
+          activityIndicator.startAnimating()
+      }
+
+      func stopLoading() {
+          activityIndicator.stopAnimating()
+          
+      }
 }
 
 struct WeatherResponse: Decodable {

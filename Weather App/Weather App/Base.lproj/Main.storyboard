@@ -34,7 +34,7 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="center" spacing="49" translatesAutoresizingMaskIntoConstraints="NO" id="mDi-FM-ZOy">
-                                <rect key="frame" x="76.666666666666686" y="109" width="240" height="634.33333333333337"/>
+                                <rect key="frame" x="76.666666666666686" y="74.333333333333314" width="240" height="703.33333333333348"/>
                                 <subviews>
                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="QWR-x8-kAJ">
                                         <rect key="frame" x="0.0" y="0.0" width="240" height="240"/>
@@ -50,8 +50,11 @@
                                         <color key="textColor" systemColor="tableCellBlueTextColor"/>
                                         <nil key="highlightedColor"/>
                                     </label>
+                                    <activityIndicatorView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" style="medium" translatesAutoresizingMaskIntoConstraints="NO" id="LYP-gd-krG">
+                                        <rect key="frame" x="109.99999999999999" y="374" width="20.000000000000014" height="20"/>
+                                    </activityIndicatorView>
                                     <segmentedControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="nBh-XS-gxE">
-                                        <rect key="frame" x="91.333333333333329" y="374" width="56.999999999999986" height="32"/>
+                                        <rect key="frame" x="91.333333333333329" y="443.00000000000006" width="56.999999999999986" height="32"/>
                                         <segments>
                                             <segment title="C"/>
                                             <segment title="F"/>
@@ -61,19 +64,19 @@
                                         </connections>
                                     </segmentedControl>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Weather Condition" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="N8n-3D-O1b">
-                                        <rect key="frame" x="32" y="454" width="175.66666666666666" height="24"/>
+                                        <rect key="frame" x="32" y="523" width="175.66666666666666" height="24"/>
                                         <fontDescription key="fontDescription" type="boldSystem" pointSize="20"/>
                                         <color key="textColor" name="AccentColor"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Location" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="xow-YC-zmv">
-                                        <rect key="frame" x="79.333333333333329" y="527" width="80.999999999999986" height="24"/>
+                                        <rect key="frame" x="79.333333333333329" y="596" width="80.999999999999986" height="24"/>
                                         <fontDescription key="fontDescription" type="boldSystem" pointSize="20"/>
                                         <color key="textColor" systemColor="tableCellBlueTextColor"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="4Qp-eI-eXs">
-                                        <rect key="frame" x="86.333333333333329" y="600" width="66.999999999999986" height="34.333333333333371"/>
+                                        <rect key="frame" x="86.333333333333329" y="669" width="66.999999999999986" height="34.333333333333371"/>
                                         <state key="normal" title="Button"/>
                                         <buttonConfiguration key="configuration" style="plain" title="Cities"/>
                                         <connections>
@@ -120,6 +123,7 @@
                     </navigationItem>
                     <simulatedToolbarMetrics key="simulatedBottomBarMetrics"/>
                     <connections>
+                        <outlet property="activityIndicator" destination="LYP-gd-krG" id="KrK-qX-Zt6"/>
                         <outlet property="locationLabel" destination="xow-YC-zmv" id="aNf-G1-tzt"/>
                         <outlet property="searchTextField" destination="m6o-QV-xAM" id="GKI-3H-gDn"/>
                         <outlet property="segmentedControl" destination="nBh-XS-gxE" id="pqS-47-8h4"/>
@@ -152,6 +156,7 @@
                                             <rect key="frame" x="0.0" y="0.0" width="393" height="43.666667938232422"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                         </tableViewCellContentView>
+                                        <color key="backgroundColor" red="0.7705919792" green="0.93671440650000004" blue="1" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
                                     </tableViewCell>
                                 </prototypes>
                             </tableView>
