@@ -15,7 +15,7 @@ struct WeatherItem {
 }
 
 class ViewController: UIViewController, UITextFieldDelegate {
-//    var weatherItem: WeatherItem?
+
     
     var weatherItem: [WeatherItem] = [] 
     var isCelsiusSelected: Bool = true
@@ -105,8 +105,12 @@ class ViewController: UIViewController, UITextFieldDelegate {
         handleSegmentChange(sender: sender)
     }
     
+//    AREZOU put here location
     @IBAction func onLocationTapped(_ sender: UIBarButtonItem) {
+        loadWeather2(latitude: 51.50986, longitude: -0.11809)
+        
     }
+    
     @IBAction func onSearchTapped(_ sender: UIBarButtonItem) {
         loadWeather(search: searchTextField.text)
     }
@@ -115,91 +119,93 @@ class ViewController: UIViewController, UITextFieldDelegate {
     }
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "goToSecondScreen" {
-            if let destination = segue.destination as? SecondViewController{
+            if let destination = segue.destination as? SecondViewController {
                 destination.weatherItem = weatherItem
                 
                 let selectedSegment = segmentedControl.selectedSegmentIndex
-                            if let latestWeatherItem = weatherItem.last {
-                                switch selectedSegment {
-                                case 0:
-                                    // Celsius selected
-                                    destination.selectedTemperature = "\(latestWeatherItem.temperature)C"
-                                case 1:
-                                    // Fahrenheit selected
-                                    destination.selectedTemperature = "\(latestWeatherItem.temperature_F)F"
-                                default:
-                                    break
-                                }
-                            }
+                if let latestWeatherItem = weatherItem.last {
+                    switch selectedSegment {
+                    case 0:
+                        // Celsius selected
+                        destination.isCelsiusSelected = true
+                        destination.selectedTemperature = "\(latestWeatherItem.temperature)C"
+                    case 1:
+                        // Fahrenheit selected
+                        destination.isCelsiusSelected = false
+                        destination.selectedTemperature = "\(latestWeatherItem.temperature_F)F"
+                    default:
+                        break
+                    }
+                }
             }
-                       
         }
     }
+
     
+//    To handle Segment Change
     func handleSegmentChange(sender: UISegmentedControl) {
-        _ = sender.selectedSegmentIndex
-            guard let latestWeatherItem = weatherItem.last else { return }
+        guard let latestWeatherItem = weatherItem.last else { return }
+        
         switch sender.selectedSegmentIndex {
         case 0:
-            // Handle first segment selected
             // Celsius selected
             isCelsiusSelected = true
             tempretureLabel.text = "\(latestWeatherItem.temperature)C"
             
-            
         case 1:
-            // Handle second segment selected
             // Fahrenheit selected
             isCelsiusSelected = false
             tempretureLabel.text = "\(latestWeatherItem.temperature_F)F"
+            
         default:
             break
         }
-      
     }
+
+
     
-    func loadWeather(search: String?){
-        guard let search = search else{
+    func loadWeather(search: String?) {
+        guard let search = search else {
             return
         }
+        
         startLoading()
-//        Step1 Get URl
-        guard let url = getURL(query:search) else {
+        
+        guard let url = getURL(query: search) else {
             print("Could not get URL")
             stopLoading()
             return
         }
         
-//    Step2: Create URLSession
         let session = URLSession.shared
-           
-//    Step3: Create task for session
-        let dataTask = session.dataTask(with: url){data,response,error in
+        
+        let dataTask = session.dataTask(with: url) { data, response, error in
             DispatchQueue.main.async {
-                            self.stopLoading()
-                        }
-//            network call finished
-            print("Network call complete")
+                self.stopLoading()
+            }
             
             guard error == nil else {
-                print("Received error")
+                print("Received error:", error!.localizedDescription)
                 return
             }
+            
             guard let data = data else {
                 print("No data found")
                 return
             }
             
-            if let weatherResponse = self.parseJson(data: data){
+            if let weatherResponse = self.parseJson(data: data) {
                 print(weatherResponse.location.name)
                 print(weatherResponse.current.temp_c)
                 
-                
                 DispatchQueue.main.async {
                     self.locationLabel.text = weatherResponse.location.name
-                    self.tempretureLabel.text = "\(weatherResponse.current.temp_c)C"
+                    
+                    // Determine which temperature to display based on selected unit
+                    let temperature = self.isCelsiusSelected ? weatherResponse.current.temp_c : weatherResponse.current.temp_f
+                    self.tempretureLabel.text = "\(temperature)\(self.isCelsiusSelected ? "C" : "F")"
+                    
                     self.weatherCondition.text = weatherResponse.current.condition.text
-                
                     
                     if let symbol = self.weatherCodeToSymbol[weatherResponse.current.condition.code] {
                         self.weatherConditionImage.image = UIImage(systemName: symbol)
@@ -207,30 +213,24 @@ class ViewController: UIViewController, UITextFieldDelegate {
                         self.weatherConditionImage.image = UIImage(systemName: "questionmark")
                     }
                     
-                    _ = UIImage(systemName: "questionmark")! // Replace with your default image
-
-                    // Create the WeatherItem
-                    self.weatherItem.append(WeatherItem(
+                    // Create the WeatherItem and append to weatherItem array
+                    let weatherItem = WeatherItem(
                         image: self.weatherConditionImage.image,
                         name: weatherResponse.location.name,
-                    condition: weatherResponse.current.condition.text,
-                    temperature: weatherResponse.current.temp_c,
-                        temperature_F: weatherResponse.current.temp_f))
+                        condition: weatherResponse.current.condition.text,
+                        temperature: weatherResponse.current.temp_c,
+                        temperature_F: weatherResponse.current.temp_f
+                    )
                     
-                   
-                
-
+                    self.weatherItem.append(weatherItem)
                 }
-
-                
             }
-            
         }
         
-//        Step 4 : Start a task
         dataTask.resume()
         searchTextField.text = ""
     }
+
 //    API
     private func getURL(query:String) -> URL?{
         let baseUrl = "https://api.weatherapi.com/v1/"
@@ -245,6 +245,95 @@ class ViewController: UIViewController, UITextFieldDelegate {
         
         return URL(string:url)
     }
+    
+    // Define the getURL function
+    private func getURL2(latitude: Double, longitude: Double) -> URL? {
+        let baseUrl = "https://api.weatherapi.com/v1/"
+        let currentEndPoint = "current.json"
+        let apiKey = "1751bfb89ca94a6fa3620316241207"
+        
+        let query = "\(latitude),\(longitude)"
+        
+        guard let url = "\(baseUrl)\(currentEndPoint)?key=\(apiKey)&q=\(query)"
+            .addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else {
+            return nil
+        }
+        
+        print(url)
+        
+        return URL(string: url)
+    }
+
+    func loadWeather2(latitude: Double, longitude: Double) {
+        startLoading()
+        
+        // Step 1: Get URL for latitude and longitude
+        guard let url = getURL2(latitude: latitude, longitude: longitude) else {
+            print("Could not get URL")
+            stopLoading()
+            return
+        }
+        
+        // Step 2: Create URLSession
+        let session = URLSession.shared
+        
+        // Step 3: Create data task for session
+        let dataTask = session.dataTask(with: url) { data, response, error in
+            DispatchQueue.main.async {
+                self.stopLoading()
+            }
+            
+            // Check for errors
+            guard error == nil else {
+                print("Received error:", error!.localizedDescription)
+                return
+            }
+            
+            // Check if data is available
+            guard let data = data else {
+                print("No data found")
+                return
+            }
+            
+            // Parse JSON data into WeatherResponse object
+            if let weatherResponse = self.parseJson(data: data) {
+                print("Location:", weatherResponse.location.name)
+                print("Temperature:", weatherResponse.current.temp_c)
+                
+                DispatchQueue.main.async {
+                    // Update UI components with weather data
+                    self.locationLabel.text = weatherResponse.location.name
+                    self.tempretureLabel.text = "\(weatherResponse.current.temp_c)°C"
+                    self.weatherCondition.text = weatherResponse.current.condition.text
+                    
+                    // Set weather condition image based on weather code
+                    if let symbol = self.weatherCodeToSymbol[weatherResponse.current.condition.code] {
+                        self.weatherConditionImage.image = UIImage(systemName: symbol)
+                    } else {
+                        self.weatherConditionImage.image = UIImage(systemName: "questionmark")
+                    }
+                    
+                    // Append weather data to weatherItem array
+                    self.weatherItem.append(WeatherItem(
+                        image: self.weatherConditionImage.image,
+                        name: weatherResponse.location.name,
+                        condition: weatherResponse.current.condition.text,
+                        temperature: weatherResponse.current.temp_c,
+                        temperature_F: weatherResponse.current.temp_f
+                    ))
+                }
+            }
+        }
+        
+        // Step 4: Start the data task
+        dataTask.resume()
+        searchTextField.text = ""  // Assuming searchTextField is where the user enters city names
+    }
+
+
+    
+    
+
     
     private func parseJson(data: Data) -> WeatherResponse? {
         let decoder = JSONDecoder()

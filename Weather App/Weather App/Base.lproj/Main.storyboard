@@ -96,15 +96,9 @@
                     <toolbarItems/>
                     <navigationItem key="navigationItem" id="neO-bv-GT1" customClass="Vi">
                         <nil key="title"/>
-                        <barButtonItem key="leftBarButtonItem" style="plain" id="CHf-X3-89U">
-                            <button key="customView" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" id="osB-Wh-qfC">
-                                <rect key="frame" x="16" y="4.6666666666666679" width="46" height="35"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <state key="normal" title="Button"/>
-                                <buttonConfiguration key="configuration" style="plain" image="location.north" catalog="system"/>
-                            </button>
+                        <barButtonItem key="leftBarButtonItem" title="Item" image="paperplane.fill" catalog="system" id="PXH-MI-pvh">
                             <connections>
-                                <action selector="onLocationTapped:" destination="DbH-xZ-MDu" id="nWp-QL-Ygt"/>
+                                <action selector="onLocationTapped:" destination="DbH-xZ-MDu" id="1c7-Ll-nbx"/>
                             </connections>
                         </barButtonItem>
                         <textField key="titleView" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="248" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Enter Location" textAlignment="center" minimumFontSize="17" id="m6o-QV-xAM">
@@ -182,7 +176,7 @@
         </scene>
     </scenes>
     <resources>
-        <image name="location.north" catalog="system" width="110" height="128"/>
+        <image name="paperplane.fill" catalog="system" width="128" height="119"/>
         <namedColor name="AccentColor">
             <color red="0.0" green="0.46000000000000002" blue="0.89000000000000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
