@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import CoreLocation
 struct WeatherItem {
     let image: UIImage?
     let name: String
@@ -14,12 +15,12 @@ struct WeatherItem {
     let temperature_F: Float
 }
 
-class ViewController: UIViewController, UITextFieldDelegate {
+class ViewController: UIViewController, UITextFieldDelegate,CLLocationManagerDelegate {
 
     
     var weatherItem: [WeatherItem] = [] 
     var isCelsiusSelected: Bool = true
-
+    private let locationManager=CLLocationManager()
     let weatherCodeToSymbol: [Int: String] = [
         1000:  "sun.max.circle.fill",
                     1003: "cloud.sun.circle.fill",
@@ -81,6 +82,8 @@ class ViewController: UIViewController, UITextFieldDelegate {
            weatherConditionImage.heightAnchor.constraint(equalToConstant: 240).isActive = true
         
         activityIndicator.hidesWhenStopped = true
+        locationManager.delegate=self
+        
 
     }
     
@@ -94,7 +97,7 @@ class ViewController: UIViewController, UITextFieldDelegate {
     }
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         textField.resignFirstResponder() // Dismiss the keyboard
-        loadWeather(search: searchTextField.text)
+        loadWeather(cityName: searchTextField.text, latitude: nil, longitude:nil )
         textField.endEditing(true)
             return true
     }
@@ -107,12 +110,14 @@ class ViewController: UIViewController, UITextFieldDelegate {
     
 //    AREZOU put here location
     @IBAction func onLocationTapped(_ sender: UIBarButtonItem) {
-        loadWeather2(latitude: 51.50986, longitude: -0.11809)
+        locationManager.requestWhenInUseAuthorization()
+
+        locationManager.requestLocation()
         
     }
     
     @IBAction func onSearchTapped(_ sender: UIBarButtonItem) {
-        loadWeather(search: searchTextField.text)
+        loadWeather(cityName: searchTextField.text, latitude: nil, longitude: nil)
     }
     @IBAction func onCitiesTapped(_ sender: UIButton) {
         performSegue(withIdentifier: "goToSecondScreen", sender: self)
@@ -162,20 +167,19 @@ class ViewController: UIViewController, UITextFieldDelegate {
         }
     }
 
-
-    
-    func loadWeather(search: String?) {
-        guard let search = search else {
-            return
-        }
+    func loadWeather(cityName: String?,latitude: Double?, longitude: Double?) {
+//        guard let cityName = cityName else {
+//            return
+//        }
         
         startLoading()
         
-        guard let url = getURL(query: search) else {
+        guard let url = getURL(cityName: cityName, latitude: latitude, longitude: longitude) else {
             print("Could not get URL")
             stopLoading()
             return
         }
+        print(url)
         
         let session = URLSession.shared
         
@@ -230,108 +234,60 @@ class ViewController: UIViewController, UITextFieldDelegate {
         dataTask.resume()
         searchTextField.text = ""
     }
+    
 
 //    API
-    private func getURL(query:String) -> URL?{
-        let baseUrl = "https://api.weatherapi.com/v1/"
-        let currentEndPoint = "current.json"
-        let apiKey = "1751bfb89ca94a6fa3620316241207"
-       guard let url =  "\(baseUrl)\(currentEndPoint)?key=\(apiKey)&q=\(query)"
-        .addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else{
-           return nil
-       }
-        
-        print(url)
-        
-        return URL(string:url)
-    }
-    
-    // Define the getURL function
-    private func getURL2(latitude: Double, longitude: Double) -> URL? {
+
+    private func getURL(cityName: String?, latitude: Double?, longitude: Double?) -> URL? {
         let baseUrl = "https://api.weatherapi.com/v1/"
         let currentEndPoint = "current.json"
         let apiKey = "1751bfb89ca94a6fa3620316241207"
         
-        let query = "\(latitude),\(longitude)"
-        
-        guard let url = "\(baseUrl)\(currentEndPoint)?key=\(apiKey)&q=\(query)"
-            .addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else {
+        // Safely unwrap cityName, latitude, and longitude
+        if let unwrappedCityName = cityName, !unwrappedCityName.isEmpty {
+            let query = unwrappedCityName
+            let urlString = "\(baseUrl)\(currentEndPoint)?key=\(apiKey)&q=\(query)".addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)
+            guard let url = URL(string: urlString ?? "") else { return nil }
+            print(url)
+            return url
+        } else if let unwrappedLatitude = latitude, let unwrappedLongitude = longitude {
+            let query = "\(unwrappedLatitude),\(unwrappedLongitude)"
+            let urlString = "\(baseUrl)\(currentEndPoint)?key=\(apiKey)&q=\(query)".addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)
+            guard let url = URL(string: urlString ?? "") else { return nil }
+            print(url)
+            return url
+        } else {
+            // Neither cityName nor both latitude and longitude are available
             return nil
         }
-        
-        print(url)
-        
-        return URL(string: url)
     }
 
-    func loadWeather2(latitude: Double, longitude: Double) {
-        startLoading()
-        
-        // Step 1: Get URL for latitude and longitude
-        guard let url = getURL2(latitude: latitude, longitude: longitude) else {
-            print("Could not get URL")
-            stopLoading()
-            return
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        print("got location")
+        if let location = locations.last{
+            let lat=location.coordinate.latitude
+            let lng=location.coordinate.longitude
+            print("lat :  \(lat),\(lng)")
+            loadWeather(cityName: nil,latitude: lat, longitude: -lng)
         }
         
-        // Step 2: Create URLSession
-        let session = URLSession.shared
+    }
+    func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
+        print("Location Manager failed with error: \(error.localizedDescription)")
         
-        // Step 3: Create data task for session
-        let dataTask = session.dataTask(with: url) { data, response, error in
-            DispatchQueue.main.async {
-                self.stopLoading()
-            }
+        if let clError = error as? CLError, clError.code == .denied {
+            let alert = UIAlertController(title: "Location Access Denied", message: "Please enable location services for this app in Settings.", preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "OK", style: .default))
             
-            // Check for errors
-            guard error == nil else {
-                print("Received error:", error!.localizedDescription)
-                return
-            }
+            self.present(alert, animated: true, completion: nil)
+        } else {
+            let alert = UIAlertController(title: "Error", message: "Failed to retrieve location. Please check your network connection.", preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "OK", style: .default))
             
-            // Check if data is available
-            guard let data = data else {
-                print("No data found")
-                return
-            }
-            
-            // Parse JSON data into WeatherResponse object
-            if let weatherResponse = self.parseJson(data: data) {
-                print("Location:", weatherResponse.location.name)
-                print("Temperature:", weatherResponse.current.temp_c)
-                
-                DispatchQueue.main.async {
-                    // Update UI components with weather data
-                    self.locationLabel.text = weatherResponse.location.name
-                    self.tempretureLabel.text = "\(weatherResponse.current.temp_c)°C"
-                    self.weatherCondition.text = weatherResponse.current.condition.text
-                    
-                    // Set weather condition image based on weather code
-                    if let symbol = self.weatherCodeToSymbol[weatherResponse.current.condition.code] {
-                        self.weatherConditionImage.image = UIImage(systemName: symbol)
-                    } else {
-                        self.weatherConditionImage.image = UIImage(systemName: "questionmark")
-                    }
-                    
-                    // Append weather data to weatherItem array
-                    self.weatherItem.append(WeatherItem(
-                        image: self.weatherConditionImage.image,
-                        name: weatherResponse.location.name,
-                        condition: weatherResponse.current.condition.text,
-                        temperature: weatherResponse.current.temp_c,
-                        temperature_F: weatherResponse.current.temp_f
-                    ))
-                }
-            }
+            self.present(alert, animated: true, completion: nil)
         }
-        
-        // Step 4: Start the data task
-        dataTask.resume()
-        searchTextField.text = ""  // Assuming searchTextField is where the user enters city names
     }
 
-
-    
     
 
     
@@ -377,56 +333,8 @@ struct WeatherCondition: Decodable  {
     let text: String
     let code: Int
 }
+class MyLocationManagerDelegate:NSObject,CLLocationManagerDelegate {
+    
 
-//struct WeatherItem {
-//    let image = UIImage?(<#UIImage#>)
-//    let condition: String
-//    let temperature: Float
-//}
-//do {
-//    "location": {
-//        "name": "London",
-//        "region": "City of London, Greater London",
-//        "country": "United Kingdom",
-//        "lat": 51.52,
-//        "lon": -0.11,
-//        "tz_id": "Europe/London",
-//        "localtime_epoch": 1720754029,
-//        "localtime": "2024-07-12 4:13"
-//    },
-//    "current": {
-//        "last_updated_epoch": 1720753200,
-//        "last_updated": "2024-07-12 04:00",
-//        "temp_c": 14.2,
-//        "temp_f": 57.6,
-//        "is_day": 0,
-//        "condition": {
-//            "text": "Overcast",
-//            "icon": "//cdn.weatherapi.com/weather/64x64/night/122.png",
-//            "code": 1009
-//        },
-//        "wind_mph": 11.9,
-//        "wind_kph": 19.1,
-//        "wind_degree": 50,
-//        "wind_dir": "NE",
-//        "pressure_mb": 1017.0,
-//        "pressure_in": 30.03,
-//        "precip_mm": 0.01,
-//        "precip_in": 0.0,
-//        "humidity": 82,
-//        "cloud": 100,
-//        "feelslike_c": 13.2,
-//        "feelslike_f": 55.7,
-//        "windchill_c": 11.1,
-//        "windchill_f": 52.0,
-//        "heatindex_c": 12.5,
-//        "heatindex_f": 54.5,
-//        "dewpoint_c": 11.0,
-//        "dewpoint_f": 51.9,
-//        "vis_km": 10.0,
-//        "vis_miles": 6.0,
-//        "uv": 1.0,
-//        "gust_mph": 12.5,
-//        "gust_kph": 20.1
-//    }
-//}
+    
+}

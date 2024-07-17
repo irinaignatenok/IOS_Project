@@ -10,7 +10,6 @@ import UIKit
 class SecondViewController: UIViewController {
 //    var weatherItem: WeatherItem? 
     @IBOutlet weak var tableView: UITableView!
-    
 //    var weatherItem: [WeatherItem] = []
     
     var weatherItem: [WeatherItem] = []
