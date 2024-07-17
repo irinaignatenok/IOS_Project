@@ -8,9 +8,9 @@
 import UIKit
 
 class SecondViewController: UIViewController {
-//    var weatherItem: WeatherItem? 
+
     @IBOutlet weak var tableView: UITableView!
-//    var weatherItem: [WeatherItem] = []
+
     
     var weatherItem: [WeatherItem] = []
     
@@ -23,7 +23,7 @@ class SecondViewController: UIViewController {
         tableView.dataSource = self
         tableView.delegate = self
 
-        // Do any additional setup after loading the view.
+
     }
     var index = 0
 
@@ -56,7 +56,6 @@ extension SecondViewController: UITableViewDataSource {
         content.textProperties.color = .systemBlue
         content.secondaryTextProperties.color = .systemGray
         
-        // Set the city name
         content.text = item.name
         
         // Determine the temperature based on the selected format
@@ -67,11 +66,12 @@ extension SecondViewController: UITableViewDataSource {
             temperature = "\(item.temperature_F)F"
         }
         print(temperature)
+        
         // Set the secondary text with temperature and condition
         content.secondaryText = "\(temperature) - \(item.condition)"
         content.imageToTextPadding = 40
         
-        // Apply content configuration to cell
+       
         cell.contentConfiguration = content
         
         // Add border to cell
