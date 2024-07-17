@@ -108,7 +108,7 @@ class ViewController: UIViewController, UITextFieldDelegate,CLLocationManagerDel
         handleSegmentChange(sender: sender)
     }
     
-//    AREZOU put here location
+
     @IBAction func onLocationTapped(_ sender: UIBarButtonItem) {
         locationManager.requestWhenInUseAuthorization()
 
@@ -168,9 +168,7 @@ class ViewController: UIViewController, UITextFieldDelegate,CLLocationManagerDel
     }
 
     func loadWeather(cityName: String?,latitude: Double?, longitude: Double?) {
-//        guard let cityName = cityName else {
-//            return
-//        }
+
         
         startLoading()
         
